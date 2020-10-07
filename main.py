@@ -45,6 +45,6 @@ if __name__ == '__main__':
     fnames = glob.glob(f'/Volumes/Media/Data/{source}/*.fits.gz')
     fnames.sort()
     func = functools.partial(process_single_magnetogram, source)
-    for fname in fnames[:1]:
+    for fname in fnames:
         with multiprocessing.Pool(1) as p:
             p.map(func, [fname])
