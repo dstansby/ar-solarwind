@@ -2,6 +2,7 @@ import os
 import pathlib
 import glob
 import multiprocessing
+import functools
 
 import astropy.units as u
 import numpy as np
@@ -20,7 +21,7 @@ nlat = 90
 dtime_fmt = '%Y%m%d_%H%M%S'
 
 
-def process_single_magnetogram(path):
+def process_single_magnetogram(source, path):
     """
     Process a single magnetogram and save outputs.
     """
@@ -35,13 +36,15 @@ def process_single_magnetogram(path):
     b_all = m.data.ravel()
 
     date_str = m.date.strftime(dtime_fmt)
-    fname = output_dir / f'{date_str}.npz'
+    fname = output_dir / source / f'{date_str}.npz'
     np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all)
 
 
 if __name__ == '__main__':
-    fnames = glob.glob('/Volumes/Media/Data/gong/*.fits.gz')
+    source = 'gong'
+    fnames = glob.glob(f'/Volumes/Media/Data/{source}/*.fits.gz')
     fnames.sort()
+    func = functools.partial(process_single_magnetogram, source)
     for fname in fnames:
         with multiprocessing.Pool(1) as p:
-            p.map(process_single_magnetogram, [fname])
+            p.map(func, [fname])
