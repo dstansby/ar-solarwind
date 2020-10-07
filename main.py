@@ -7,11 +7,11 @@ import functools
 import astropy.units as u
 import numpy as np
 
-from magnetogram import Magnetogram
+from magnetogram import MagnetogramFactory
 from solar_library import get_gong_map
 
 
-output_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__))) / 'data'
+output_dir = pathlib.Path('/Volumes/Media/open_fline_results')
 
 nr = 50
 rss = 2
@@ -26,7 +26,7 @@ def process_single_magnetogram(source, path):
     Process a single magnetogram and save outputs.
     """
     print(f'Processing {path}')
-    m = Magnetogram(path, nr, rss, nlon, nlat)
+    m = MagnetogramFactory(path, nr, rss, nlon, nlat, source)
     feet = m.fline_feet
     b_feet = m.b_at_feet
 
@@ -41,10 +41,10 @@ def process_single_magnetogram(source, path):
 
 
 if __name__ == '__main__':
-    source = 'gong'
+    source = 'solis'
     fnames = glob.glob(f'/Volumes/Media/Data/{source}/*.fits.gz')
     fnames.sort()
     func = functools.partial(process_single_magnetogram, source)
-    for fname in fnames:
+    for fname in fnames[:1]:
         with multiprocessing.Pool(1) as p:
             p.map(func, [fname])

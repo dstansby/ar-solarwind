@@ -12,6 +12,11 @@ import pfsspy
 import pfsspy.tracing
 
 
+class MagnetogramFactory:
+    def __new__(self, filepath, nr, rss, nlon, nlat, source):
+        return sources[source](filepath, nr, rss, nlon, nlat)
+
+
 class Magnetogram:
     def __init__(self, filepath, nr, rss, nlon, nlat):
         """
@@ -96,3 +101,7 @@ class GONGMagnetogram(Magnetogram):
         super().__init__(filepath, nr, rss, nlon, nlat)
         self.m._data = br = np.roll(self.m.data, self.m.meta['CRVAL1'] + 180, axis=1)
         self.m.meta['CRVAL1'] = 180
+
+
+sources = {'gong': GONGMagnetogram,
+           'solis': Magnetogram}
