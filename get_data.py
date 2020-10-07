@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import pathlib
+import urllib.request
 
 import numpy as np
 from ftplib import FTP
@@ -57,6 +58,25 @@ def get_gong_maps(year):
         print(res.errors)
 
 
+def get_solis_maps():
+    # dl = parfive.Downloader(max_conn=2, headers={'user': 'anonymous'})
+    to_dl = []
+    local_dir = pathlib.Path('/Volumes/Media/Data/solis')
+
+    with FTP('solis.nso.edu', user='anonymous') as ftp:
+        print('Getting file list...')
+        ftp.cwd('/integral/kbv7g')
+        files = ftp.nlst()
+        for fname in files:
+            if fname[-2:] == 'gz':
+                local_file = local_dir / fname
+                with open(local_file, "wb") as file:
+                    print(fname)
+                    # use FTP's RETR command to download the file
+                    ftp.retrbinary(f"RETR {fname}", file.write)
+
+
 if __name__ == '__main__':
-    for i in range(2007, 2010):
-        get_gong_maps(i)
+    get_solis_maps()
+    # for i in range(2007, 2010):
+    #     get_gong_maps(i)
