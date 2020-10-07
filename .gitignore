@@ -1,0 +1,8 @@
+*.DS_Store
+*.mp4
+*.pyc
+*.pdf
+*.png
+*.fits.gz
+*.ipynb
+*.npz
