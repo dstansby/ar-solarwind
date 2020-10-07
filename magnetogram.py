@@ -11,6 +11,8 @@ import sunpy.map
 import pfsspy
 import pfsspy.tracing
 
+import map
+
 
 class MagnetogramFactory:
     def __new__(self, filepath, nr, rss, nlon, nlat, source):
