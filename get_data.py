@@ -76,7 +76,20 @@ def get_solis_maps():
                     ftp.retrbinary(f"RETR {fname}", file.write)
 
 
+def get_hmi_maps():
+    from sunpy.net import Fido, attrs as a
+    import sunpy.map
+
+    series = a.jsoc.Series('hmi.mrsynop_small_720s')
+    time = a.Time('2010/01/01', '2010/01/01')
+
+    result = Fido.search(time, series, a.jsoc.Notify("d.stansby@ucl.ac.uk"))
+
+    Fido.fetch(result)
+    print(result)
+
+
 if __name__ == '__main__':
-    get_solis_maps()
+    get_hmi_maps()
     # for i in range(2007, 2010):
     #     get_gong_maps(i)
