@@ -44,10 +44,19 @@ def process_single_magnetogram(source, path):
     np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all)
 
 
-if __name__ == '__main__':
-    source = 'solis'
-    fnames = glob.glob(f'/Volumes/Media/Data/{source}/*.fits.gz')
+def get_fnames(folder):
+    fnames = glob.glob(f'{folder}/*.fits.gz')
+    if len(fnames) == 0:
+        fnames = glob.glob(f'{folder}/*.fits')
     fnames.sort()
+    return fnames
+
+
+if __name__ == '__main__':
+    source = 'hmi'
+    folder = f'/Volumes/Media/Data/{source}'
+    fnames = get_fnames(folder)
+    print(f"Found {len(fnames)} files in {folder}")
     func = functools.partial(process_single_magnetogram, source)
     for fname in fnames:
         with multiprocessing.Pool(1) as p:
