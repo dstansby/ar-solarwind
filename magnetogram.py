@@ -8,6 +8,7 @@ from astropy.coordinates import SkyCoord
 import astropy.constants as const
 import astropy.units as u
 import sunpy.map
+from astropy.time import Time
 import pfsspy
 import pfsspy.tracing
 
@@ -16,7 +17,10 @@ import map
 
 class MagnetogramFactory:
     def __new__(self, filepath, nr, rss, nlon, nlat, source):
-        return sources[source](filepath, nr, rss, nlon, nlat)
+        try:
+            return sources[source](filepath, nr, rss, nlon, nlat)
+        except KeyError:
+            raise RuntimeError(f"No magnetogram source registered for {source}")
 
 
 class Magnetogram:
@@ -37,9 +41,6 @@ class Magnetogram:
         """
         self.filepath = filepath
         self.m = sunpy.map.Map(filepath)
-        # Roll to get in Carrington frame
-        self.m._data = br = np.roll(self.m.data, self.m.meta['CRVAL1'] + 180, axis=1)
-        self.m.meta['CRVAL1'] = 180
         self.nr = nr
         self.rss = rss
         self.nlon = nlon
@@ -47,8 +48,14 @@ class Magnetogram:
 
         # Set some helpful methods from the map
         self.peek = self.m.peek
-        self.date = self.m.date
-        self.data = self.m.data
+
+    @property
+    def data(self):
+        return self.m.data
+
+    @property
+    def date(self):
+        return self.m.date
 
     @cached_property
     def pfss_input(self):
@@ -98,6 +105,22 @@ class Magnetogram:
         return sunpy.map.sample_at_coords(self.m, self.fline_feet)
 
 
+class HMIMagnetogram(Magnetogram):
+    def __init__(self, filepath, nr, rss, nlon, nlat):
+        super().__init__(filepath, nr, rss, nlon, nlat)
+        self.m.meta['cunit1'] = 'deg'
+        self.m.meta['cunit2'] = 'deg'
+        # Since, this map uses the cylindrical equal-area (CEA) projection,
+        # the spacing should be modified to 180/pi times the original value
+        # Reference: Section 5.5, Thompson 2006
+        self.m.meta['cdelt2'] = 180 / np.pi * self.m.meta['cdelt2']
+        self.m.meta['cdelt1'] = np.abs(self.m.meta['cdelt1'])
+        self.m.meta.pop('CRDER1')
+        self.m.meta.pop('CRDER2')
+        self.m.meta['date-obs'] = Time.strptime(self.m.meta['t_start'], '%Y.%m.%d_%H:%M:%S_TAI').isot
+        self.m = self.m.resample([360, 180] * u.pix)
+
+
 class GONGMagnetogram(Magnetogram):
     def __init__(self, filepath, nr, rss, nlon, nlat):
         super().__init__(filepath, nr, rss, nlon, nlat)
@@ -106,4 +129,5 @@ class GONGMagnetogram(Magnetogram):
 
 
 sources = {'gong': GONGMagnetogram,
-           'solis': Magnetogram}
+           'solis': Magnetogram,
+           'hmi': HMIMagnetogram}
