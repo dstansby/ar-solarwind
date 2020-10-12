@@ -27,6 +27,10 @@ def process_single_magnetogram(source, path):
     """
     print(f'Processing {path}')
     m = MagnetogramFactory(path, nr, rss, nlon, nlat, source)
+    if np.any(~np.isfinite(m.data)):
+        nonfin = np.sum(~np.isfinite(m.data))
+        print(f'Skipping {path}, has {nonfin} non-finite data points')
+        return
     feet = m.fline_feet
     b_feet = m.b_at_feet
 
