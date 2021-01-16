@@ -9,7 +9,8 @@ from sunpy.coordinates.sun import (carrington_rotation_number,
                                    carrington_rotation_time)
 
 
-local_dir = pathlib.Path('/Volumes/Media/Data/gong')
+local_dir = pathlib.Path('/Volumes/Work/Data')
+jsoc_user = "d.stansby@ucl.ac.uk"
 
 
 def get_crots(year):
@@ -80,16 +81,21 @@ def get_hmi_maps():
     from sunpy.net import Fido, attrs as a
     import sunpy.map
 
-    series = a.jsoc.Series('hmi.mrsynop_small_720s')
+    series = a.jsoc.Series('hmi.synoptic_mr_polfil_720s')
+    # Time doesn't matter in the search, but have to provide it to sunpy for
+    # some reason
     time = a.Time('2010/01/01', '2010/01/01')
 
-    result = Fido.search(time, series, a.jsoc.Notify("d.stansby@ucl.ac.uk"))
-
-    Fido.fetch(result)
+    result = Fido.search(time, series, a.jsoc.Notify(jsoc_user))
     print(result)
+
+    result = Fido.fetch(result, path=local_dir / 'hmi', max_conn=1)
+    for error in result.errors:
+        print(error[1], error[2])
 
 
 if __name__ == '__main__':
+    print('Getting HMI maps')
     get_hmi_maps()
     # for i in range(2007, 2010):
     #     get_gong_maps(i)
