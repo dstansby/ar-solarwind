@@ -14,7 +14,7 @@ from solar_library import get_gong_map
 output_dir = pathlib.Path('/Volumes/Work/open_fline_results')
 
 nr = 50
-rss = 1.5
+rss = 2.0
 nlon = 180
 nlat = 90
 
@@ -31,17 +31,26 @@ def process_single_magnetogram(source, path):
         nonfin = np.sum(~np.isfinite(m.data))
         print(f'Skipping {path}, has {nonfin} non-finite data points')
         return
-    feet = m.fline_feet
+    feet = m.fline_feet_coords
     b_feet = m.b_at_feet
 
+    print('Tracing field lines in...')
     lats = feet.lat.to_value(u.deg)
     lons = feet.lon.to_value(u.deg)
     b_feet = b_feet
     b_all = m.data.ravel()
 
+    print('Tracing field lines out...')
+    open_coords = m.open_field_solar_surface_coords
+    open_lats = open_coords.lat.to_value(u.deg)
+    open_lons = open_coords.lon.to_value(u.deg)
+    open_b = m.open_field_solar_surface_b
+
     date_str = m.date.strftime(dtime_fmt)
-    fname = output_dir / source / f'{date_str}.npz'
-    np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all)
+    rss_str = str(int(rss * 10))
+    fname = output_dir / source / rss_str / f'{date_str}.npz'
+    np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all,
+             open_b=open_b, open_lats=open_lats, open_lons=open_lons)
 
 
 def get_fnames(folder):

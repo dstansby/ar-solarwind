@@ -65,11 +65,9 @@ class Magnetogram:
     def pfss_output(self):
         return pfsspy.pfss(self.pfss_input)
 
-    @cached_property
-    def fline_seeds(self):
+    def fline_seeds(self, radius):
         """
-        Create a grid of field line seeds on the source surface, equally spaced
-        on a CEA projection.
+        Create a grid of field line seeds, equally spaced on a CEA projection.
 
         Parameters
         ----------
@@ -81,19 +79,19 @@ class Magnetogram:
         lat = (np.arccos(np.linspace(-1, 1, self.nlat)) - np.pi / 2) * u.rad
         lon = np.linspace(0, 360, self.nlon, endpoint=False) * u.deg
         lat, lon = np.meshgrid(lat, lon)
-        r = self.rss * const.R_sun
-        source_surf_seeds = SkyCoord(radius=r, lon=lon.ravel(),
+        source_surf_seeds = SkyCoord(radius=radius, lon=lon.ravel(),
                                      lat=lat.ravel(),
                                      frame=self.m.coordinate_frame)
         return source_surf_seeds
 
     @cached_property
-    def fline_feet(self):
+    def fline_feet_coords(self):
         """
         Solar endpoints of traced field line seeds.
         """
         tracer = pfsspy.tracing.FortranTracer(max_steps=2000)
-        flines = tracer.trace(self.fline_seeds, self.pfss_output)
+        radius = self.rss * const.R_sun
+        flines = tracer.trace(self.fline_seeds(radius), self.pfss_output)
         open_flines = flines.open_field_lines
         return open_flines.solar_feet
 
@@ -102,7 +100,24 @@ class Magnetogram:
         """
         Magnetic field values at solar feet.
         """
-        return sunpy.map.sample_at_coords(self.m, self.fline_feet)
+        return sunpy.map.sample_at_coords(self.m, self.fline_feet_coords)
+
+    @cached_property
+    def open_field_solar_surface_coords(self):
+        """
+        Trace a regular grid of seeds from the solar surface, and return the
+        seed coordinates of the open field lines.
+        """
+        seeds = self.fline_seeds(1 * const.R_sun)
+        tracer = pfsspy.tracing.FortranTracer(max_steps=2000)
+        flines = tracer.trace(seeds, self.pfss_output)
+        open_flines = flines.open_field_lines
+        return open_flines.solar_feet
+
+    @cached_property
+    def open_field_solar_surface_b(self):
+        return sunpy.map.sample_at_coords(
+            self.m, self.open_field_solar_surface_coords)
 
 
 class HMIMagnetogram(Magnetogram):
