@@ -1,7 +1,7 @@
 import os
 import pathlib
 import glob
-import multiprocessingx
+import multiprocessing
 import functools
 
 import astropy.units as u
