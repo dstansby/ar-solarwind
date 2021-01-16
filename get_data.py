@@ -43,15 +43,16 @@ def get_gong_maps(year):
     ftp = FTP('gong2.nso.edu')
     ftp.login()
     print('Getting file list...')
+    local_gong_dir = local_dir / 'gong'
     for d in crot_dates:
         date_dir = d.strftime('%Y%m/mrzqs%y%m%d')
         gong_dir = f"/oQR/zqs/{date_dir}"
         ftp.cwd(gong_dir)
         files = ftp.nlst()
         fname = files[0]
-        if not (local_dir / fname).exists():
+        if not (local_gong_dir / fname).exists():
             dl.enqueue_file(f"ftp://gong2.nso.edu{gong_dir}/{fname}",
-                            local_dir, fname)
+                            local_gong_dir, fname)
 
     ftp.quit()
     res = dl.download()
@@ -62,7 +63,7 @@ def get_gong_maps(year):
 def get_solis_maps():
     # dl = parfive.Downloader(max_conn=2, headers={'user': 'anonymous'})
     to_dl = []
-    local_dir = pathlib.Path('/Volumes/Media/Data/solis')
+    solis_dir = local_dir / 'solis'
 
     with FTP('solis.nso.edu', user='anonymous') as ftp:
         print('Getting file list...')
@@ -70,11 +71,12 @@ def get_solis_maps():
         files = ftp.nlst()
         for fname in files:
             if fname[-2:] == 'gz':
-                local_file = local_dir / fname
-                with open(local_file, "wb") as file:
-                    print(fname)
-                    # use FTP's RETR command to download the file
-                    ftp.retrbinary(f"RETR {fname}", file.write)
+                local_file = solis_dir / fname
+                if not local_file.exists():
+                    with open(local_file, "wb") as file:
+                        print(fname)
+                        # use FTP's RETR command to download the file
+                        ftp.retrbinary(f"RETR {fname}", file.write)
 
 
 def get_hmi_maps():
@@ -95,7 +97,11 @@ def get_hmi_maps():
 
 
 if __name__ == '__main__':
-    print('Getting HMI maps')
-    get_hmi_maps()
-    # for i in range(2007, 2010):
+    # print('Getting HMI maps')
+    # get_hmi_maps()
+    # print('Getting GONG maps')
+    # for i in range(2020, 2022):
     #     get_gong_maps(i)
+
+    print('Getting solis maps')
+    get_solis_maps()
