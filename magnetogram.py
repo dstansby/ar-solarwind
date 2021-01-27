@@ -89,7 +89,7 @@ class Magnetogram:
         """
         Solar endpoints of traced field line seeds.
         """
-        tracer = pfsspy.tracing.FortranTracer(max_steps=2000)
+        tracer = pfsspy.tracing.FortranTracer(max_steps=1000)
         radius = self.rss * const.R_sun
         flines = tracer.trace(self.fline_seeds(radius), self.pfss_output)
         open_flines = flines.open_field_lines
