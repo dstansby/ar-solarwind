@@ -84,15 +84,19 @@ class Magnetogram:
                                      frame=self.m.coordinate_frame)
         return source_surf_seeds
 
+
+    @cached_property
+    def flines(self):
+        tracer = pfsspy.tracing.FortranTracer(max_steps=1000)
+        radius = self.rss * const.R_sun
+        return tracer.trace(self.fline_seeds(radius), self.pfss_output)
+
     @cached_property
     def fline_feet_coords(self):
         """
         Solar endpoints of traced field line seeds.
         """
-        tracer = pfsspy.tracing.FortranTracer(max_steps=1000)
-        radius = self.rss * const.R_sun
-        flines = tracer.trace(self.fline_seeds(radius), self.pfss_output)
-        open_flines = flines.open_field_lines
+        open_flines = self.flines.open_field_lines
         return open_flines.solar_feet
 
     @cached_property
@@ -101,6 +105,14 @@ class Magnetogram:
         Magnetic field values at solar feet.
         """
         return sunpy.map.sample_at_coords(self.m, self.fline_feet_coords)
+
+    @cached_property
+    def b_at_ss(self):
+        """
+        Magnetic field values at the source surface.
+        """
+        open_fline_bool = self.flines.connectivities.astype(bool)
+        return self.pfss_output.source_surface_br.data.ravel()[open_fline_bool]
 
     @cached_property
     def open_field_solar_surface_coords(self):

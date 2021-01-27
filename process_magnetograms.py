@@ -39,11 +39,12 @@ def process_single_magnetogram(source, path):
     lons = feet.lon.to_value(u.deg)
     b_feet = b_feet
     b_all = m.data.ravel()
+    b_ss = m.b_at_ss.ravel()
 
     date_str = m.date.strftime(dtime_fmt)
     rss_str = str(int(rss * 10))
     fname = output_dir / source / rss_str / f'{date_str}.npz'
-    np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all)
+    np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all, b_ss=b_ss)
 
 
 def get_fnames(folder):
