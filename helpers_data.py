@@ -11,8 +11,7 @@ def load_data(files):
     # Number of data points for each variable and time
     npoints = 360 * 180
     # Variable names
-    variables = ['lons', 'lats', 'b_all', 'b_feet',
-                 'open_b', 'open_lons', 'open_lats']
+    variables = ['lons', 'lats', 'b_all', 'b_feet']
 
     # Empty array to store data
     all_data = np.zeros((len(variables), len(files), npoints)) * np.nan
