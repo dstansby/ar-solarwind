@@ -15,8 +15,8 @@ output_dir = pathlib.Path('/Volumes/Work/open_fline_results')
 
 nr = 50
 rss = 2.0
-nlon = 180
-nlat = 90
+nlon = 360
+nlat = 180
 
 dtime_fmt = '%Y%m%d_%H%M%S'
 
