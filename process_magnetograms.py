@@ -58,7 +58,7 @@ def get_fnames(folder):
 if __name__ == '__main__':
     source = 'gong'
     folder = f'/Volumes/Work/Data/{source}'
-    fnames = get_fnames(folder)
+    fnames = get_fnames(folder)[::-1]
     print(f"Found {len(fnames)} files in {folder}")
     func = functools.partial(process_single_magnetogram, source)
     for fname in fnames:
