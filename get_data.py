@@ -29,6 +29,18 @@ def get_crots(year):
     return list(range(crot_start, crot_end + 1))
 
 
+def get_mdi_maps():
+    base_url = 'http://soi.stanford.edu/magnetic/synoptic/carrot/M_Corr'
+    dl = parfive.Downloader(max_conn=1)
+    for i in range(1911, 2105):
+        fname = f'{base_url}/synop_Mr_0.polfil.{i}.fits'
+        dl.enqueue_file(fname, local_dir / 'mdi')
+
+    res = dl.download()
+    if len(res.errors):
+        print(res.errors)
+
+
 def get_kpvt_maps():
     base_url = 'ftp://nispdata.nso.edu/kpvt/synoptic/mag'
     dl = parfive.Downloader(max_conn=1)
@@ -115,5 +127,5 @@ if __name__ == '__main__':
     # for i in range(2020, 2022):
     #     get_gong_maps(i)
 
-    print('Getting kpvt maps')
-    get_kpvt_maps()
+    print('Getting mdi maps')
+    get_mdi_maps()

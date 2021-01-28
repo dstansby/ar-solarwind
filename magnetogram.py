@@ -10,6 +10,7 @@ import astropy.constants as const
 import astropy.units as u
 import sunpy.map
 import sunpy.coordinates.sun
+from sunpy.time import parse_time
 from astropy.time import Time
 import pfsspy
 import pfsspy.tracing
@@ -170,7 +171,21 @@ class KPVTMagnetogram(Magnetogram):
         super().__init__(m, nr, rss, nlon, nlat)
 
 
+class MDIMagnetogram(Magnetogram):
+    def __init__(self, filepath, nr, rss, nlon, nlat):
+        super().__init__(filepath, nr, rss, nlon, nlat)
+        self.m.meta['CTYPE1'] = 'CRLN-CEA'
+        self.m.meta['CTYPE2'] = 'CRLT-CEA'
+        self.m.meta['CDELT1'] = np.abs(self.m.meta['CDELT1'])
+        self.m.meta['CDELT2'] = 180 / np.pi * self.m.meta['CDELT2']
+        self.m.meta['CRVAL1'] = 0.0
+        self.m.meta['CUNIT1'] = 'deg'
+        self.m.meta['CUNIT2'] = 'deg'
+        self.m.meta['date-obs'] = parse_time(self.m.meta['t_start']).isot
+        self.m = self.m.resample([360, 180] * u.pix)
+
 sources = {'gong': GONGMagnetogram,
            'solis': Magnetogram,
            'hmi': HMIMagnetogram,
-           'kpvt': KPVTMagnetogram}
+           'kpvt': KPVTMagnetogram,
+           'mdi': MDIMagnetogram}
