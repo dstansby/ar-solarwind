@@ -1,6 +1,7 @@
 """
 A class for working with a single magnetogram.
 """
+import pathlib
 from functools import cached_property
 import numpy as np
 
@@ -8,9 +9,11 @@ from astropy.coordinates import SkyCoord
 import astropy.constants as const
 import astropy.units as u
 import sunpy.map
+import sunpy.coordinates.sun
 from astropy.time import Time
 import pfsspy
 import pfsspy.tracing
+import pfsspy.utils
 
 import map
 
@@ -39,8 +42,10 @@ class Magnetogram:
         nlat : int
             Number of points in lattitude for tracing seeds.
         """
-        self.filepath = filepath
-        self.m = sunpy.map.Map(filepath)
+        if isinstance(filepath, sunpy.map.GenericMap):
+            self.m = filepath
+        else:
+            self.m = sunpy.map.Map(filepath)
         self.nr = nr
         self.rss = rss
         self.nlon = nlon
@@ -77,13 +82,13 @@ class Magnetogram:
             Number of points in lattitude.
         """
         lat = (np.arccos(np.linspace(-1, 1, self.nlat)) - np.pi / 2) * u.rad
-        lon = np.linspace(0, 360, self.nlon, endpoint=False) * u.deg
+        lon = np.linspace(0, 360, self.nlon + 1, endpoint=True) * u.deg
+        lon = (lon[1:] + lon[:-1]) / 2
         lat, lon = np.meshgrid(lat, lon)
         source_surf_seeds = SkyCoord(radius=radius, lon=lon.ravel(),
                                      lat=lat.ravel(),
                                      frame=self.m.coordinate_frame)
         return source_surf_seeds
-
 
     @cached_property
     def flines(self):
@@ -155,6 +160,17 @@ class GONGMagnetogram(Magnetogram):
         self.m.meta['CRVAL1'] = 180
 
 
+class KPVTMagnetogram(Magnetogram):
+    def __init__(self, filepath, nr, rss, nlon, nlat):
+        data, header = sunpy.io.fits.read(filepath)[0]
+        crot = int(pathlib.Path(filepath).name[1:5])
+        date = sunpy.coordinates.sun.carrington_rotation_time(crot)
+        header = pfsspy.utils.carr_cea_wcs_header(date.isot, data.shape[::-1])
+        m = sunpy.map.Map(data, header)
+        super().__init__(m, nr, rss, nlon, nlat)
+
+
 sources = {'gong': GONGMagnetogram,
            'solis': Magnetogram,
-           'hmi': HMIMagnetogram}
+           'hmi': HMIMagnetogram,
+           'kpvt': KPVTMagnetogram}
