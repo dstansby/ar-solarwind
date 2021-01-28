@@ -29,6 +29,18 @@ def get_crots(year):
     return list(range(crot_start, crot_end + 1))
 
 
+def get_kpvt_maps():
+    base_url = 'ftp://nispdata.nso.edu/kpvt/synoptic/mag'
+    dl = parfive.Downloader(max_conn=1)
+    for i in range(1625, 2008):
+        fname = f'{base_url}/m{i}f.fits'
+        dl.enqueue_file(fname, local_dir / 'kpvt')
+
+    res = dl.download()
+    if len(res.errors):
+        print(res.errors)
+
+
 def get_gong_maps(year):
     """
     Get GONG maps closest to the start of each Carrington rotation in year.
@@ -103,5 +115,5 @@ if __name__ == '__main__':
     # for i in range(2020, 2022):
     #     get_gong_maps(i)
 
-    print('Getting solis maps')
-    get_solis_maps()
+    print('Getting kpvt maps')
+    get_kpvt_maps()
