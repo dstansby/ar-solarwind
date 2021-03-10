@@ -82,7 +82,8 @@ class Magnetogram:
         nlat : int
             Number of points in lattitude.
         """
-        lat = (np.arccos(np.linspace(-1, 1, self.nlat)) - np.pi / 2) * u.rad
+        lat = (np.arccos(np.linspace(-1, 1, self.nlat + 1, endpoint=True)) - np.pi / 2) * u.rad
+        lat = (lat[1:] + lat[:-1]) / 2
         lon = np.linspace(0, 360, self.nlon + 1, endpoint=True) * u.deg
         lon = (lon[1:] + lon[:-1]) / 2
         lat, lon = np.meshgrid(lat, lon)
@@ -183,6 +184,7 @@ class MDIMagnetogram(Magnetogram):
         self.m.meta['CUNIT2'] = 'deg'
         self.m.meta['date-obs'] = parse_time(self.m.meta['t_start']).isot
         self.m = self.m.resample([360, 180] * u.pix)
+
 
 sources = {'gong': GONGMagnetogram,
            'solis': Magnetogram,
