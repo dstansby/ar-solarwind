@@ -4,6 +4,7 @@ A class for working with a single magnetogram.
 import pathlib
 from functools import cached_property
 import numpy as np
+import warnings
 
 from astropy.coordinates import SkyCoord
 import astropy.constants as const
@@ -65,7 +66,9 @@ class Magnetogram:
 
     @cached_property
     def pfss_input(self):
-        return pfsspy.Input(self.m, self.nr, self.rss)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            return pfsspy.Input(self.m, self.nr, self.rss)
 
     @cached_property
     def pfss_output(self):
@@ -96,7 +99,10 @@ class Magnetogram:
     def flines(self):
         tracer = pfsspy.tracing.FortranTracer(max_steps=1000)
         radius = self.rss * const.R_sun
-        return tracer.trace(self.fline_seeds(radius), self.pfss_output)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            traced = tracer.trace(self.fline_seeds(radius), self.pfss_output)
+        return traced
 
     @cached_property
     def fline_feet_coords(self):
