@@ -118,8 +118,14 @@ class Magnetogram:
         """
         Magnetic field values at the source surface.
         """
-        open_fline_bool = self.flines.connectivities.astype(bool)
-        return self.pfss_output.source_surface_br.data.ravel()[open_fline_bool]
+        return self.pfss_output.source_surface_br.data.ravel()
+
+    @cached_property
+    def is_open_fline(self):
+        """
+        1 if open, 0 if closed field line.
+        """
+        return self.flines.connectivities.astype(bool)
 
     @cached_property
     def open_field_solar_surface_coords(self):

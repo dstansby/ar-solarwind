@@ -35,9 +35,13 @@ def process_single_magnetogram(source, path):
     feet = m.fline_feet_coords
     b_feet = m.b_at_feet
 
-    lats = feet.lat.to_value(u.deg)
-    lons = feet.lon.to_value(u.deg)
-    b_feet = b_feet
+    lats = np.ones(nlon * nlat) * np.nan
+    lats[m.is_open_fline] = feet.lat.to_value(u.deg)
+    lons = np.ones(nlon * nlat) * np.nan
+    lons[m.is_open_fline] = feet.lon.to_value(u.deg)
+    b_feet = np.ones(nlon * nlat) * np.nan
+    b_feet[m.is_open_fline] = m.b_at_feet
+
     b_all = m.data.ravel()
     b_ss = m.b_at_ss.ravel()
 

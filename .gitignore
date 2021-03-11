@@ -6,3 +6,4 @@
 *.fits.gz
 *.ipynb
 *.npz
+CME_data/*
