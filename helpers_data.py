@@ -36,3 +36,25 @@ def load_data(files):
     return all_data
 
 
+def all_flux(data):
+    b_ss = np.abs(data.loc['b_ss'])
+    allflux = np.sum(b_ss, axis=1)
+    return allflux
+
+def ar_flux(data, threshold):
+    b_feet = np.abs(data.loc['b_feet'])
+    b_ss = np.abs(data.loc['b_ss'])
+    # Calculate flux
+    ar_flux = np.sum((b_feet > threshold) * b_ss, axis=1)
+    return ar_flux
+
+
+def load_ssn():
+    df = pd.read_csv('data/SN_d_tot_V2.0.csv', delimiter=';',
+            names=['Year', 'Month', 'Day', 'Fractional year', 'SSN', 'SSN st dev',
+                   'nobs', 'Definitive indicator'],
+            parse_dates={'Date': [0, 1, 2]},
+            na_values=['-1'])
+    df = df.loc[df['Date'] > datetime(1975, 1, 1)]
+    df = df.set_index('Date')
+    return df
