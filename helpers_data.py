@@ -41,6 +41,7 @@ def all_flux(data):
     allflux = np.sum(b_ss, axis=1)
     return allflux
 
+
 def ar_flux(data, threshold):
     b_feet = np.abs(data.loc['b_feet'])
     b_ss = np.abs(data.loc['b_ss'])
@@ -51,10 +52,10 @@ def ar_flux(data, threshold):
 
 def load_ssn():
     df = pd.read_csv('data/SN_d_tot_V2.0.csv', delimiter=';',
-            names=['Year', 'Month', 'Day', 'Fractional year', 'SSN', 'SSN st dev',
-                   'nobs', 'Definitive indicator'],
-            parse_dates={'Date': [0, 1, 2]},
-            na_values=['-1'])
+                     names=['Year', 'Month', 'Day', 'Fractional year', 'SSN', 'SSN st dev',
+                            'nobs', 'Definitive indicator'],
+                     parse_dates={'Date': [0, 1, 2]},
+                     na_values=['-1'])
     df = df.loc[df['Date'] > datetime(1975, 1, 1)]
     df = df.set_index('Date')
     return df
