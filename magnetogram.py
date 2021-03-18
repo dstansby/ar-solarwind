@@ -89,11 +89,11 @@ class Magnetogram:
         lat = (lat[1:] + lat[:-1]) / 2
         lon = np.linspace(0, 360, self.nlon + 1, endpoint=True) * u.deg
         lon = (lon[1:] + lon[:-1]) / 2
-        lat, lon = np.meshgrid(lat, lon)
-        source_surf_seeds = SkyCoord(radius=radius, lon=lon.ravel(),
-                                     lat=lat.ravel(),
-                                     frame=self.m.coordinate_frame)
-        return source_surf_seeds
+        lon, lat = np.meshgrid(lon, lat, indexing='ij')
+        self.source_surf_seeds = SkyCoord(radius=radius, lon=lon.ravel(),
+                                          lat=lat.ravel(),
+                                          frame=self.m.coordinate_frame)
+        return self.source_surf_seeds
 
     @cached_property
     def flines(self):
@@ -124,7 +124,10 @@ class Magnetogram:
         """
         Magnetic field values at the source surface.
         """
-        return self.pfss_output.source_surface_br.data.ravel()
+        all_b = sunpy.map.sample_at_coords(self.pfss_output.source_surface_br,
+                                           self.source_surf_seeds)
+        # Only want to save source surface values of open field lines
+        return all_b[self.is_open_fline]
 
     @cached_property
     def is_open_fline(self):
