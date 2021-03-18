@@ -36,31 +36,3 @@ def load_data(files):
     return all_data
 
 
-def source_fractions(data):
-    """
-    Calculate and return the fraction of different open field regions.
-    """
-    # Active region
-    ar_thresh = 20
-    n_ar_pix_min = np.sum(np.abs(data.loc['b_feet']) > 20, axis=1)
-    n_ar_pix_max = np.sum(np.abs(data.loc['b_feet']) > ar_thresh, axis=1)
-    # Coronal hole
-    n_ch_pix = np.sum(np.abs(data.loc['b_feet']) < ar_thresh, axis=1)
-    n_tot_pix = n_ar_pix_max + n_ch_pix
-
-    # PCHs
-    n_npch_pix = np.sum(data.loc['lats'] > np.rad2deg(np.arcsin(0.7)), axis=1)
-    n_spch_pix = np.sum(data.loc['lats'] < -np.rad2deg(np.arcsin(0.7)), axis=1)
-
-    dates = n_ar_pix_min.coords['time']
-
-    frac_pch_n = n_npch_pix / n_tot_pix
-    frac_pch_s = n_spch_pix / n_tot_pix
-    frac_ch = n_ch_pix / n_tot_pix
-    frac_ars_min = n_ar_pix_min / n_tot_pix
-    frac_ars_max = n_ar_pix_max / n_tot_pix
-
-    frac_ech = 1 - frac_pch_n - frac_pch_s - frac_ars_min
-
-    ret = xr.DataArray([frac_pch_n, frac_pch_s, frac_ars_min, frac_ech, n_tot_pix], coords=(['n pch', 's pch', 'ar', 'ech', 'n tot'], dates))
-    return ret
