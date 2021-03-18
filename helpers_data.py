@@ -2,9 +2,13 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 dtime_fmt = '%Y%m%d_%H%M%S'
+
+# Cutoff for AR detection in G for each source
+thresholds = {'gong': 30, 'solis': 40, 'kpvt': 30, 'hmi': 150, 'mdi': 100}
 
 
 def load_data(files):
