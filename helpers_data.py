@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+import glob
 
 import numpy as np
 import pandas as pd
@@ -51,11 +52,35 @@ def ar_flux(data, threshold):
 
 
 def load_ssn():
-    df = pd.read_csv('data/SN_d_tot_V2.0.csv', delimiter=';',
+    df = pd.read_csv('data/ssn/SN_d_tot_V2.0.csv', delimiter=';',
                      names=['Year', 'Month', 'Day', 'Fractional year', 'SSN', 'SSN st dev',
                             'nobs', 'Definitive indicator'],
                      parse_dates={'Date': [0, 1, 2]},
                      na_values=['-1'])
     df = df.loc[df['Date'] > datetime(1975, 1, 1)]
     df = df.set_index('Date')
+    return df
+
+
+def load_cme_rate():
+    df = pd.read_csv('data/cme/CME_obs.csv', names=['Date', 'n'],
+                     parse_dates=['Date'])
+    df = df.set_index('Date')
+    df = df.resample('25D', origin=datetime(1995, 10, 1)).sum()
+    return df
+
+
+def load_lasco_downtime():
+    files = glob.glob('data/cme/lasco_downtime/*.txt')
+    dfs = [pd.read_csv(f, sep='-',
+                       names=['Start', 'End'],
+                       parse_dates=['Start', 'End'],
+                       comment='#') for f in files]
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.set_index('Start')
+    df = df.sort_index()
+    df = df.drop_duplicates()
+    df['dt'] = df['End'] - df.index
+    df = df.drop('End', axis=1)
+    df = df.resample('25D', origin=datetime(1995, 10, 1)).sum()
     return df
