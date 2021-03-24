@@ -37,13 +37,19 @@ def process_single_magnetogram(source, path):
 
     lats = np.ones(nlon * nlat) * np.nan
     lats[m.is_open_fline] = feet.lat.to_value(u.deg)
+
     lons = np.ones(nlon * nlat) * np.nan
     lons[m.is_open_fline] = feet.lon.to_value(u.deg)
+
     b_feet = np.ones(nlon * nlat) * np.nan
     b_feet[m.is_open_fline] = m.b_at_feet
 
     b_all = m.data.ravel()
-    b_ss = m.b_at_ss.ravel()
+    b_ss = np.ones(nlon * nlat) * np.nan
+    b_ss[m.is_open_fline] = m.b_at_ss
+    # Sampling on the solar surface can be a bit erronous, so label field line
+    # polarity using source surface magnetic field
+    b_feet = np.abs(b_feet) * np.sign(b_ss)
 
     date_str = m.date.strftime(dtime_fmt)
     rss_str = str(int(rss * 10))
