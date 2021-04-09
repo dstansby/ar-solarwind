@@ -9,7 +9,7 @@ import xarray as xr
 dtime_fmt = '%Y%m%d_%H%M%S'
 
 # Cutoff for AR detection in G for each source
-thresholds = {'gong': 30, 'solis': 40, 'kpvt': 30, 'hmi': 150, 'mdi': 100}
+thresholds = {'gong': 30, 'solis': 40, 'kpvt': 35, 'mdi': 100}
 
 
 def load_data(files):
@@ -84,3 +84,16 @@ def load_lasco_downtime():
     df = df.drop('End', axis=1)
     df = df.resample('25D', origin=datetime(1995, 10, 1)).sum()
     return df
+
+
+def get_ar_lats(stime, etime):
+    files = glob.glob('data/ar/ar_data_*.txt')
+    df = pd.concat([pd.read_csv(f, index_col='event_starttime',
+                                parse_dates=['event_starttime']) for f in files])
+    df = df.loc[df.index > stime]
+    df = df.loc[df.index < etime]
+    return df['hgc_y']
+
+
+if __name__ == '__main__':
+    get_ar_lats()
