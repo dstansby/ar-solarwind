@@ -1,21 +1,27 @@
 from datetime import datetime, timedelta
+from ftplib import FTP
 import pathlib
-import urllib.request
 
 import numpy as np
-from ftplib import FTP
 import parfive
 from sunpy.coordinates.sun import (carrington_rotation_number,
                                    carrington_rotation_time)
 
 
+# Set this to the directory you want to download files to
 local_dir = pathlib.Path('/Volumes/Work/Data')
+# Set this to your JSOC username
+# See http://jsoc.stanford.edu/ajax/register_email.html to register
 jsoc_user = "d.stansby@ucl.ac.uk"
 
 
 def get_crots(year):
     """
     Get all Carrington rotations that start within the given year.
+
+    Parameters
+    ----------
+    year : int
     """
     year_start = datetime(year, 1, 1)
     year_end = datetime(year + 1, 1, 1) - timedelta(seconds=1)
@@ -30,6 +36,9 @@ def get_crots(year):
 
 
 def get_mdi_maps():
+    """
+    Get all available MDI Carrington rotation synoptic maps.
+    """
     base_url = 'http://soi.stanford.edu/magnetic/synoptic/carrot/M_Corr'
     dl = parfive.Downloader(max_conn=1)
     for i in range(1911, 2105):
@@ -42,6 +51,9 @@ def get_mdi_maps():
 
 
 def get_kpvt_maps():
+    """
+    Get all available KPVT Carrington rotation synoptic maps.
+    """
     base_url = 'ftp://nispdata.nso.edu/kpvt/synoptic/mag'
     dl = parfive.Downloader(max_conn=1)
     for i in range(1625, 2008):
@@ -55,7 +67,11 @@ def get_kpvt_maps():
 
 def get_gong_maps(year):
     """
-    Get GONG maps closest to the start of each Carrington rotation in year.
+    Get GONG maps closest to the start of each Carrington rotation in the given year.
+
+    Parameters
+    ----------
+    year : int
     """
     crots = get_crots(year)
     crot_dates = [carrington_rotation_time(crot) for crot in crots]
@@ -89,7 +105,9 @@ def get_gong_maps(year):
 
 
 def get_solis_maps():
-    # dl = parfive.Downloader(max_conn=2, headers={'user': 'anonymous'})
+    """
+    Get all available SOLIS Carrington rotation synoptic maps.
+    """
     to_dl = []
     solis_dir = local_dir / 'solis'
 
