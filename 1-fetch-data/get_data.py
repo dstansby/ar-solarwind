@@ -61,8 +61,6 @@ def get_kpvt_maps():
         dl.enqueue_file(fname, local_dir / 'kpvt')
 
     res = dl.download()
-    if len(res.errors):
-        print(res.errors)
 
 
 def get_gong_maps(year):
