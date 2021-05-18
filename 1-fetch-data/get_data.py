@@ -125,23 +125,6 @@ def get_solis_maps():
                         ftp.retrbinary(f"RETR {fname}", file.write)
 
 
-def get_hmi_maps():
-    from sunpy.net import Fido, attrs as a
-    import sunpy.map
-
-    series = a.jsoc.Series('hmi.synoptic_mr_polfil_720s')
-    # Time doesn't matter in the search, but have to provide it to sunpy for
-    # some reason
-    time = a.Time('2010/01/01', '2010/01/01')
-
-    result = Fido.search(time, series, a.jsoc.Notify(jsoc_user))
-    print(result)
-
-    result = Fido.fetch(result, path=local_dir / 'hmi', max_conn=1)
-    for error in result.errors:
-        print(error[1], error[2])
-
-
 if __name__ == '__main__':
     # print('Getting HMI maps')
     # get_hmi_maps()
