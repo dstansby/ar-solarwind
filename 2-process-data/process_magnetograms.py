@@ -1,27 +1,29 @@
-import pathlib
+import functools
 import glob
 import multiprocessing
-import functools
+import pathlib
 
 import astropy.units as u
+import matplotlib.pyplot as plt
 import numpy as np
 
 from magnetogram import MagnetogramFactory
 
-
+# Directory to output traced field line data to
 output_dir = pathlib.Path('/Volumes/Work/open_fline_results')
 
+# Configurable PFSS model resolution. Set to 50 for the paper
 nr = 50
-rss = 1.5
+# Size of fieldline grid to trace. Set to 360, 180 for the paper.
 nlon = 360
 nlat = 180
-
-dtime_fmt = '%Y%m%d_%H%M%S'
+# Configurable source surface radius
+# In the paper this is set at 2.0 throughout, apart from appendix 1
+# where it is varied as [1.5, 2.0, 2.5, 3.0].
+rss = 2.0
 
 
 def save_to_png(m, path):
-    import matplotlib.pyplot as plt
-
     path = pathlib.Path(path)
     directory = path.parent
     fname = path.stem
