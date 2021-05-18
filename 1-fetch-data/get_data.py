@@ -6,10 +6,10 @@ import numpy as np
 import parfive
 from sunpy.coordinates.sun import (carrington_rotation_number,
                                    carrington_rotation_time)
-
+import tqdm
 
 # Set this to the directory you want to download files to
-local_dir = pathlib.Path('/Volumes/Work/Data')
+local_dir = pathlib.Path('/Volumes/Work/synoptic_data')
 # Set this to your JSOC username
 # See http://jsoc.stanford.edu/ajax/register_email.html to register
 jsoc_user = "d.stansby@ucl.ac.uk"
@@ -77,12 +77,12 @@ def get_gong_maps(year):
     crot_dates = [carrington_rotation_time(crot) for crot in crots]
     crot_dates = [d for d in crot_dates if d < datetime.now()]
     crot_strs = [d.isot for d in crot_dates]
-    print(f'Dates for {year}: {crot_strs}')
+    print(f'\nDates for {year}: {crot_strs}')
 
     dl = parfive.Downloader(max_conn=2)
     ftp = FTP('gong2.nso.edu')
     ftp.login()
-    print('Getting file list...')
+    print(f'Getting file list for {year}...')
     local_gong_dir = local_dir / 'gong'
     for d in crot_dates:
         date_dir = d.strftime('%Y%m/mrzqs%y%m%d')
@@ -110,17 +110,18 @@ def get_solis_maps():
     """
     to_dl = []
     solis_dir = local_dir / 'solis'
+    solis_dir.mkdir(exist_ok=True)
 
     with FTP('solis.nso.edu', user='anonymous') as ftp:
         print('Getting file list...')
         ftp.cwd('/integral/kbv7g')
         files = ftp.nlst()
-        for fname in files:
+        print('Downloading files')
+        for fname in tqdm.tqdm(files):
             if fname[-2:] == 'gz':
                 local_file = solis_dir / fname
                 if not local_file.exists():
                     with open(local_file, "wb") as file:
-                        print(fname)
                         # use FTP's RETR command to download the file
                         ftp.retrbinary(f"RETR {fname}", file.write)
 
