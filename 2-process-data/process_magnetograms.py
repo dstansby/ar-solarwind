@@ -1,3 +1,4 @@
+import argparse
 import functools
 import glob
 import multiprocessing
@@ -23,11 +24,11 @@ nlat = 180
 rss = 2.0
 
 
-def save_to_png(m, path):
-    path = pathlib.Path(path)
-    directory = path.parent
-    fname = path.stem
-    fname = f'png_{fname}.png'
+parser = argparse.ArgumentParser(description='Process magnetograms.')
+parser.add_argument('data_source', type=str, help='Data source',
+                    choices=['gong', 'kpvt', 'solis', 'mdi'])
+args = parser.parse_args()
+source = args.data_source
 
     fig = plt.figure()
     m.m.plot(cmap='RdBu', vmin=-100, vmax=100)
