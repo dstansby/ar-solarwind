@@ -5,13 +5,18 @@ import multiprocessing
 import pathlib
 
 import astropy.units as u
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import numpy as np
 
 from magnetogram import MagnetogramFactory
 
+# Directory with magnetograms
+magnetogram_dir = pathlib.Path('/Volumes/Work/synoptic_data')
 # Directory to output traced field line data to
-output_dir = pathlib.Path('/Volumes/Work/open_fline_results')
+output_dir = pathlib.Path('/Volumes/Work/new_fline_results')
 
 # Configurable PFSS model resolution. Set to 50 for the paper
 nr = 50
@@ -30,10 +35,13 @@ parser.add_argument('data_source', type=str, help='Data source',
 args = parser.parse_args()
 source = args.data_source
 
-    fig = plt.figure()
-    m.m.plot(cmap='RdBu', vmin=-100, vmax=100)
-    fig.savefig(directory / fname)
 
+def save_to_png(m, fname):
+    fig = plt.figure()
+    m.m.plot_settings['cmap'] = 'RdBu'
+    m.m.plot_settings['norm'] = Normalize(vmin=-100, vmax=100)
+    m.m.plot()
+    fig.savefig(fname)
     plt.close('all')
 
 
@@ -55,8 +63,16 @@ def process_single_magnetogram(source, path):
         print(f'Skipping {path}, has {nonfin} non-finite data points')
         return
 
-    save_to_png(m, path)
-    return
+    rss_str = str(int(rss * 10))
+    (output_dir / source / 'png').mkdir(parents=True, exist_ok=True)
+    (output_dir / source / rss_str).mkdir(parents=True, exist_ok=True)
+    dtime_fmt = '%Y%m%d_%H%M%S'
+    date_str = m.date.strftime(dtime_fmt)
+
+    fname = output_dir / source / 'png' / f'{source}_{date_str}.png'
+    if not fname.exists():
+        print('Saving png...')
+        save_to_png(m, fname)
 
     print('Tracing field lines in...')
     feet = m.fline_feet_coords
@@ -78,25 +94,30 @@ def process_single_magnetogram(source, path):
     # polarity using source surface magnetic field
     b_feet = np.abs(b_feet) * np.sign(b_ss)
 
-    date_str = m.date.strftime(dtime_fmt)
-    rss_str = str(int(rss * 10))
     fname = output_dir / source / rss_str / f'{date_str}.npz'
     np.savez(fname, lats=lats, lons=lons, b_feet=b_feet, b_all=b_all, b_ss=b_ss)
+    print(f'✅ Processed {path}')
 
 
-def get_fnames(folder):
-    fnames = glob.glob(f'{folder}/*.fits.gz')
+def get_fnames(directory):
+    """
+    Get all .fits.gz or .fits files in ``directory``.
+
+    Parameters
+    ----------
+    directory : str
+    """
+    fnames = glob.glob(f'{directory}/*.fits.gz')
     if len(fnames) == 0:
-        fnames = glob.glob(f'{folder}/*.fits')
+        fnames = glob.glob(f'{directory}/*.fits')
     fnames.sort()
     return fnames
 
 
 if __name__ == '__main__':
-    source = 'gong'
-    folder = f'/Volumes/Work/Data/{source}'
-    fnames = get_fnames(folder)[::-1]
-    print(f"Found {len(fnames)} files in {folder}")
+    directory = f'{magnetogram_dir}/{source}'
+    fnames = get_fnames(directory)[::-1]
+    print(f"Found {len(fnames)} files in {directory}")
     func = functools.partial(process_single_magnetogram, source)
     for fname in fnames:
         # Using mutliprocessing here is an embarassingly awful method of
