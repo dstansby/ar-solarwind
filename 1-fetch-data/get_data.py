@@ -71,7 +71,11 @@ def get_gong_maps(year):
     for d in crot_dates:
         date_dir = d.strftime('%Y%m/mrzqs%y%m%d')
         gong_dir = f"/oQR/zqs/{date_dir}"
-        ftp.cwd(gong_dir)
+        try:
+            ftp.cwd(gong_dir)
+        except Exception as e:
+            print(f'❌ Could not change to directory {gong_dir}')
+            continue
         files = ftp.nlst()
         fname = files[0]
         if not (local_gong_dir / fname).exists():
@@ -123,9 +127,10 @@ def get_hmi_maps():
 if __name__ == '__main__':
     # print('Getting HMI maps')
     # get_hmi_maps()
-    # print('Getting GONG maps')
+    print('Getting GONG maps')
+    get_gong_maps(2021)
     # for i in range(2020, 2022):
     #     get_gong_maps(i)
 
-    print('Getting mdi maps')
-    get_mdi_maps()
+    # print('Getting mdi maps')
+    # get_mdi_maps()
