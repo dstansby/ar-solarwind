@@ -1,4 +1,3 @@
-import os
 import pathlib
 import glob
 import multiprocessing
@@ -8,22 +7,43 @@ import astropy.units as u
 import numpy as np
 
 from magnetogram import MagnetogramFactory
-from solar_library import get_gong_map
 
 
 output_dir = pathlib.Path('/Volumes/Work/open_fline_results')
 
 nr = 50
-rss = 2.0
+rss = 1.5
 nlon = 360
 nlat = 180
 
 dtime_fmt = '%Y%m%d_%H%M%S'
 
 
+def save_to_png(m, path):
+    import matplotlib.pyplot as plt
+
+    path = pathlib.Path(path)
+    directory = path.parent
+    fname = path.stem
+    fname = f'png_{fname}.png'
+
+    fig = plt.figure()
+    m.m.plot(cmap='RdBu', vmin=-100, vmax=100)
+    fig.savefig(directory / fname)
+
+    plt.close('all')
+
+
 def process_single_magnetogram(source, path):
     """
     Process a single magnetogram and save outputs.
+
+    Parameters
+    ----------
+    source: str
+        Source name.
+    path: pathlib.Path
+        Path to magnetogram file.
     """
     print(f'Processing {path}')
     m = MagnetogramFactory(path, nr, rss, nlon, nlat, source)
@@ -31,6 +51,10 @@ def process_single_magnetogram(source, path):
         nonfin = np.sum(~np.isfinite(m.data))
         print(f'Skipping {path}, has {nonfin} non-finite data points')
         return
+
+    save_to_png(m, path)
+    return
+
     print('Tracing field lines in...')
     feet = m.fline_feet_coords
     b_feet = m.b_at_feet
@@ -72,5 +96,8 @@ if __name__ == '__main__':
     print(f"Found {len(fnames)} files in {folder}")
     func = functools.partial(process_single_magnetogram, source)
     for fname in fnames:
+        # Using mutliprocessing here is an embarassingly awful method of
+        # avoiding memory leaks by running each magnetogram in its own
+        # thread which is then deleted along with its memory.
         with multiprocessing.Pool(1) as p:
             p.map(func, [fname])
