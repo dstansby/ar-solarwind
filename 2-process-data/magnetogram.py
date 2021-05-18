@@ -168,6 +168,7 @@ class HMIMagnetogram(Magnetogram):
         self.m.meta.pop('CRDER2')
         self.m.meta['date-obs'] = Time.strptime(self.m.meta['t_start'], '%Y.%m.%d_%H:%M:%S_TAI').isot
         self.m = self.m.resample([360, 180] * u.pix)
+        self.m.meta.update(map._earth_obs_coord_meta(self.m.meta['date-obs']))
 
 
 class GONGMagnetogram(Magnetogram):
