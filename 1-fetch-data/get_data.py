@@ -125,12 +125,15 @@ def get_solis_maps():
 
 
 if __name__ == '__main__':
-    # print('Getting HMI maps')
-    # get_hmi_maps()
-    print('Getting GONG maps')
-    get_gong_maps(2021)
-    # for i in range(2020, 2022):
-    #     get_gong_maps(i)
+    print('Getting MDI maps...')
+    get_mdi_maps()
 
-    # print('Getting mdi maps')
-    # get_mdi_maps()
+    print('Getting GONG maps...')
+    for i in range(2006, 2022):
+        get_gong_maps(i)
+
+    print('Getting solis maps...')
+    get_solis_maps()
+
+    print('Getting KPVT maps...')
+    get_kpvt_maps()
