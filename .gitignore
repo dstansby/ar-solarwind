@@ -4,6 +4,6 @@
 *.pdf
 *.png
 *.fits.gz
-*.ipynb
 *.npz
 CME_data/*
+*.ipynb_checkpoints/*
