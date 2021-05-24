@@ -6,10 +6,17 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+
+# Location of the processed data files
+data_dir = Path('/Volumes/Work/new_fline_results')
+
 dtime_fmt = '%Y%m%d_%H%M%S'
 
 # Cutoff for AR detection in G for each source
 thresholds = {'gong': 30, 'solis': 40, 'kpvt': 35, 'mdi': 100}
+
+
+bad_dates = {'20060921': 'gong', '20061018': 'gong', '20061114': 'gong', '20061212': 'gong', '20210317': 'gong', '20210414': 'gong', '20210511': 'gong', '19980607': 'mdi', '19981118': 'mdi', '19981215': 'mdi', '19990208': 'mdi', '19991107': 'mdi', '19991205': 'mdi', '20020203': 'mdi', '20030609': 'mdi', '20030706': 'mdi', '20031217': 'mdi', '20040404': 'mdi', '20070108': 'mdi', '20090723': 'mdi', '20030906': 'solis', '20040604': 'solis', '20040702': 'solis', '20040826': 'solis', '20050912': 'solis', '20060213': 'solis', '20070822': 'solis', '20071205': 'solis', '20091127': 'solis', '20100111': 'solis', '20140703': 'solis', '20141022': 'solis', '20150529': 'solis', '20150716': 'solis', '20150915': 'solis', '20170727': 'solis', '20171021': 'solis'}
 
 
 def load_data(files):
@@ -25,6 +32,10 @@ def load_data(files):
     for j, f in enumerate(files):
         f = Path(f)
         dtimes.append(datetime.strptime(f.stem, dtime_fmt))
+        if bad_dates.get(f.stem[:8], '') == f.parts[-3]:
+            # Skip if a bad date - this still keeps the datetime
+            # index as all nans in the dataframe
+            continue
         d = np.load(f)
         for i, var in enumerate(variables):
             # Pad data to have the same length

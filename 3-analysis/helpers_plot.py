@@ -1,7 +1,6 @@
 import numpy as np
 import pathlib
 
-figdir = pathlib.Path('/Users/dstansby/Dropbox/Work/Papers/20arsources/figs')
 
 def CDF(data):
     """
