@@ -7,3 +7,4 @@
 *.npz
 CME_data/*
 *.ipynb_checkpoints/*
+*checkpoint.ipynb
