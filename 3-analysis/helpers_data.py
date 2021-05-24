@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import glob
 
@@ -83,6 +83,10 @@ def load_lasco_downtime():
     df['dt'] = df['End'] - df.index
     df = df.drop('End', axis=1)
     df = df.resample('25D', origin=datetime(1995, 10, 1)).sum()
+    df[df['dt'] > timedelta(days=25)] = np.nan
+    df[(df.index > datetime(1998, 6, 24)) &
+       (df.index < datetime(1999, 2, 1))] = np.nan
+    df[(df.index < datetime(1996, 2, 1))] = np.nan
     return df
 
 
@@ -96,4 +100,5 @@ def get_ar_lats(stime, etime):
 
 
 if __name__ == '__main__':
-    get_ar_lats()
+    df = load_lasco_downtime()
+    print(df)
