@@ -1,6 +1,8 @@
 Solar wind source regions code
 ==============================
 
+[![DOI](https://zenodo.org/badge/368483171.svg)](https://zenodo.org/badge/latestdoi/368483171)
+
 This repository contains the code needed to reproduce the results in
 "Active region contributions to the solar wind over multiple solar cycles".
 
